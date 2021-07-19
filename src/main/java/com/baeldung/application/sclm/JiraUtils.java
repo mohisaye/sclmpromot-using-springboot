@@ -24,11 +24,11 @@ import java.io.IOException;
  * Created by m_sayekooie on 2/19/2020.
  */
 public class JiraUtils {
-    final static String jiraUser = "m_sayekooie";
-    final static String jiraPass = "6068254Mohi@";
-    final static String confPass = "6068254Mohi#";
-    final static String jiraServerAddress = "172.17.6.160:8080";
-    final static String confluenceServerAddress = "https://csp.iranet.net:8443";
+    final static String jiraUser = "*****";
+    final static String jiraPass = "****";
+    final static String confPass = "****";
+    final static String jiraServerAddress = "url to jira";
+    final static String confluenceServerAddress = "url to confluence";
 
     public boolean addAttachmentToIssue(String issueKey, String fullfilename) {
         CloseableHttpResponse response = null;

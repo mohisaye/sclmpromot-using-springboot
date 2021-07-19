@@ -24,7 +24,7 @@ public class BaseMain {
     private FTPClient ftp = null;
     FTPUtils ftpUtils = new FTPUtils();
 
-    public static final String host = "192.168.180.15";
+    public static final String host = "your host";
 
     public BaseMain() {
 

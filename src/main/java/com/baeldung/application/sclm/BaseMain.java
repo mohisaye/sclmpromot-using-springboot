@@ -291,6 +291,7 @@ public class BaseMain {
 
         } catch (Exception e) {
             e.getMessage();
+            e.printStackTrace();
         } finally {
             File f = new File(LOCAL_ADDRESS + loadName);
             if (f.exists()) {

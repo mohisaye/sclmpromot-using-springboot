@@ -9,16 +9,22 @@ public class User {
     public User() {
     }
 
-    public User(String name, String issueKey) {
-        this.name = name;
+    public User(String userName, String password, Issue issue) {
+        this.userName = userName;
+        this.password = password;
+        this.issue = issue;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "name",nullable = false)
-    private String name;
-
+    @Column(name = "userName",nullable = false)
+    private String userName;
+    @Column(name = "password",nullable = false)
+    private String password;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "issue_id", referencedColumnName = "id")
+    private Issue issue;
 
 
     public long getId() {
@@ -29,12 +35,27 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public Issue getIssue() {
+        return issue;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setIssue(Issue issue) {
+        this.issue = issue;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

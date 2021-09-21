@@ -1,24 +1,17 @@
 package com.baeldung.application.sclm;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.File;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by m_sayekooie on 2/19/2020.
@@ -30,53 +23,53 @@ public class JiraUtils {
     final static String jiraServerAddress = "url to jira";
     final static String confluenceServerAddress = "url to confluence";
 
-    public boolean addAttachmentToIssue(String issueKey, String fullfilename) {
-        CloseableHttpResponse response = null;
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        try {
-            String user = jiraUser;
-            String pass = jiraPass;
-            String authStr = user + ":" + pass;
-            String encoding = DatatypeConverter.printBase64Binary(authStr.getBytes("utf-8"));
-            HttpPost httppost = new HttpPost("http://" + jiraServerAddress + "/rest/api/latest/issue/" + issueKey + "/attachments");
-            httppost.setHeader("X-Atlassian-Token", "nocheck");
-            httppost.setHeader("Authorization", "Basic " + encoding);
-            File fileToUpload = new File(fullfilename);
-            FileBody fileBody = new FileBody(fileToUpload);
-            HttpEntity entity = MultipartEntityBuilder.create()
-                    .addPart("file", fileBody)
-                    .build();
-            httppost.setEntity(entity);
-            String mess = "executing request " + httppost.getRequestLine();
-//        logger.info(mess);
-            response = httpclient.execute(httppost);
-        } catch (Exception e) {
-            e.getCause().printStackTrace();
-        } finally {
-            try {
-                httpclient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (response.getStatusLine().getStatusCode() == 200)
-            return true;
-        else
-            return false;
+//    public boolean addAttachmentToIssue(String issueKey, String fullfilename) {
+//        CloseableHttpResponse response = null;
+//        CloseableHttpClient httpclient = HttpClients.createDefault();
+//        try {
+//            String user = jiraUser;
+//            String pass = jiraPass;
+//            String authStr = user + ":" + pass;
+//            String encoding = DatatypeConverter.printBase64Binary(authStr.getBytes("utf-8"));
+//            HttpPost httppost = new HttpPost("http://" + jiraServerAddress + "/rest/api/latest/issue/" + issueKey + "/attachments");
+//            httppost.setHeader("X-Atlassian-Token", "nocheck");
+//            httppost.setHeader("Authorization", "Basic " + encoding);
+//            File fileToUpload = new File(fullfilename);
+//            FileBody fileBody = new FileBody(fileToUpload);
+//            HttpEntity entity = MultipartEntityBuilder.create()
+//                    .addPart("file", fileBody)
+//                    .build();
+//            httppost.setEntity(entity);
+//            String mess = "executing request " + httppost.getRequestLine();
+////        logger.info(mess);
+//            response = httpclient.execute(httppost);
+//        } catch (Exception e) {
+//            e.getCause().printStackTrace();
+//        } finally {
+//            try {
+//                httpclient.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (response.getStatusLine().getStatusCode() == 200)
+//            return true;
+//        else
+//            return false;
+//
+//    }
 
-    }
+    public void addPageAndContent(String result, String formNumber) {
 
-    public void addPageAndContent(String result, String formNumber, int parentPage) {
-        HttpResponse response = null;
         try {
             JSONObject newPage = defineConfluencePage(formNumber, result, "LPR");
-            createConfluencePageViaPost(newPage);
+            createConfluencePage(newPage);
         } catch (Exception e) {
             e.getCause().printStackTrace();
         }
     }
 
-    public  JSONObject defineConfluencePage(String pageTitle, String wikiEntryText, String pageSpace) throws Exception {
+    public JSONObject defineConfluencePage(String pageTitle, String wikiEntryText, String pageSpace) {
 
 
         //This would be the command in Python (similar to the example
@@ -92,14 +85,14 @@ public class JiraUtils {
         //                   {"value":"<h1>Things That Are Awesome</h1><ul><li>Birds</li><li>Mammals</li><li>Decapods</li></ul>",
         //                    "representation":"storage"}
         //        },
-       //// "metadata":
+        //// "metadata":
         ////             {"labels":[
         ////                        {"prefix":"global",
         ////                        "name":"journal"},
-       ////                        {"prefix":"global",
-       ////                        "name":"awesome_stuff"}
-       ////                       ]
-       ////             }
+        ////                        {"prefix":"global",
+        ////                        "name":"awesome_stuff"}
+        ////                       ]
+        ////             }
         // }'
         // http://localhost:8080/confluence/rest/api/content/ | python -mjson.tool
 
@@ -161,35 +154,66 @@ public class JiraUtils {
         return newPage;
     }
 
-    public  void createConfluencePageViaPost(JSONObject newPage) throws Exception {
+    public void createConfluencePage(JSONObject newPage) throws Exception {
         HttpClient client = new DefaultHttpClient();
-
-        // Send update request
         HttpEntity pageEntity = null;
-
         try {
-            //2016-12-18 - StirlingCrow: Left off here.  Was finally able to get the post command to work
-            //I can begin testing adding more data to the value stuff (see above)
-            String user = jiraUser;
-            String pass = confPass;
-            String authStr = user + ":" + pass;
-            String encoding = DatatypeConverter.printBase64Binary(authStr.getBytes("utf-8"));
+            String authStr = jiraUser + ":" + confPass;
+            String encoding = DatatypeConverter.printBase64Binary(authStr.getBytes(StandardCharsets.UTF_8));
             HttpPost httppost = new HttpPost(confluenceServerAddress + "/rest/api/content/");
             httppost.setHeader("X-Atlassian-Token", "nocheck");
             httppost.setHeader("Authorization", "Basic " + encoding);
-//            HttpPost postPageRequest = new HttpPost(createContentRestUrl());
-
             StringEntity entity = new StringEntity(newPage.toString(), ContentType.APPLICATION_JSON);
             httppost.setEntity(entity);
-
             HttpResponse postPageResponse = client.execute(httppost);
             pageEntity = postPageResponse.getEntity();
-
             System.out.println("Push Page Request returned " + postPageResponse.getStatusLine().toString());
-            System.out.println("");
-            System.out.println(IOUtils.toString(pageEntity.getContent()));
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             EntityUtils.consume(pageEntity);
         }
     }
+
+//    public String getConfluencePageData(String formNum) {
+//        try {
+//            HttpClient client = new DefaultHttpClient();
+//            String user = jiraUser;
+//            String pass = confPass;
+//            String authStr = user + ":" + pass;
+//            String encoding = DatatypeConverter.printBase64Binary(authStr.getBytes("utf-8"));
+//            HttpGet httpGet =  new HttpGet(confluenceServerAddress + "/content?title=" + formNum + "&expand=body.storage");
+//            httpGet.setHeader("X-Atlassian-Token", "nocheck");
+//            httpGet.setHeader("Authorization", "Basic " + encoding);
+//
+//
+//
+//            HttpResponse httpResponse = client.execute(httpGet);
+//            if (httpResponse.getStatusLine().getStatusCode() == 200) {
+//                String response = "";
+//                Scanner scanner = new Scanner(httpResponse.toString());
+//                while (scanner.hasNextLine()) {
+//                    response += scanner.nextLine();
+//                    response += "\n";
+//                }
+//                scanner.close();
+//
+//                return httpResponse.getEntity().toString();
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        // an error happened
+//        return null;
+//    }
+//
+    public boolean findPageInSpace(String formNum) throws Exception {
+        return true;
+    }
+
+//    public void createConfluenceChildPageViaPost(JSONObject newPage) throws Exception {
+//    }
+
+
 }

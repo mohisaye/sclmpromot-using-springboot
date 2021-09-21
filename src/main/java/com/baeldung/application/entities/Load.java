@@ -1,6 +1,8 @@
 package com.baeldung.application.entities;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "LoadInfo")
@@ -10,18 +12,19 @@ public class Load {
     public Load() {
     }
 
-    public Load(String loadName, String loadDate, String loadSize, String cicsName, String issueKey, String loadSourcePath, String loadDestinPath) {
+    public Load(String loadName, String loadDate, String loadSize, String cicsName, String loadSourcePath, String loadDestinPath, String loadType) {
         this.loadName = loadName;
         this.loadDate = loadDate;
         this.loadSize = loadSize;
         this.cicsName = cicsName;
-        this.issueKey = issueKey;
         this.loadSourcePath = loadSourcePath;
         this.loadDestinPath = loadDestinPath;
+        this.loadType = loadType;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", unique = true, nullable = false)
     private long id;
     @Column(name = "loadName",nullable = false)
     private String loadName;
@@ -31,18 +34,17 @@ public class Load {
     private String loadSize;
     @Column(name = "cicsName",nullable = false)
     private String cicsName;
-    @Column(name = "issueKey",nullable = false)
-    private String issueKey;
     @Column(name = "fromPath",nullable = false)
     private String loadSourcePath;
     @Column(name = "toPath",nullable = false)
     private String loadDestinPath;
     @Column(name = "loadType",nullable = false)
     private String loadType;
-    @Column(name = "releaseStat")
-    private String releaseStat;
-    @OneToOne(mappedBy = "load")
-    private Promote promote;
+    @Column(name = "releaseTurn",nullable = false)
+    private String releaseTurn;
+    @ManyToMany(fetch=FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "loads")
+    List<Issue> issues=new ArrayList<>();
+
 
     public long getId() {
         return id;
@@ -84,14 +86,6 @@ public class Load {
         this.cicsName = cicsName;
     }
 
-    public String getIssueKey() {
-        return issueKey;
-    }
-
-    public void setIssueKey(String issueKey) {
-        this.issueKey = issueKey;
-    }
-
     public String getLoadSourcePath() {
         return loadSourcePath;
     }
@@ -116,15 +110,19 @@ public class Load {
         this.loadType = loadType;
     }
 
-    public String getReleaseStat() {
-        return releaseStat;
+    public List<Issue> getIssues() {
+        return issues;
     }
 
-    public void setReleaseStat(String releaseStat) {
-        this.releaseStat = releaseStat;
+    public void setIssues(List<Issue> issues) {
+        this.issues = issues;
     }
 
-    public Promote getPromote() {
-        return promote;
+    public void setReleaseTurn(String releaseTurn) {
+        this.releaseTurn = releaseTurn;
+    }
+
+    public String getReleaseTurn() {
+        return releaseTurn;
     }
 }

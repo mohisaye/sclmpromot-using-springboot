@@ -11,12 +11,17 @@ public class Application {
     }
 
 //    @Bean
-//    CommandLineRunner init(UserRepository userRepository) {
-//        return name -> {
-//                User user = new User();
-//                userRepository.save(user);
-//
-//            userRepository.findAll().forEach(System.out::println);
+//    CommandLineRunner init(PromoteService promoteService, PromoteRepository repository) {
+//        return args -> {
+//            List<Promote> promotes = new ArrayList<>();
+//            for (int i = 0; i < 30; i++) {
+//                Load load = new Load("as" + String.valueOf(i), "34", "55", "bmi", "a.d", "f.g", "arch");
+//                SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+//                Date date = new Date();
+//                promoteService.savePromote(String.valueOf(i+20),load,"ttreee");
+////                Promote promote = new Promote(String.valueOf(i+20),"jjjddj",formatter.format(date),load);
+////                repository.save(promote);
+//            }
 //        };
 //    }
 }

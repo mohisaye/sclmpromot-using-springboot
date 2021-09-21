@@ -1,7 +1,8 @@
 package com.baeldung.application.service;
 
+import com.baeldung.application.entities.Issue;
 import com.baeldung.application.entities.Load;
-import com.baeldung.application.entities.Promote;
+import com.baeldung.application.repositories.IssueRepository;
 import com.baeldung.application.repositories.LoadRepository;
 import com.baeldung.application.sclm.InputDto;
 import com.baeldung.application.sclm.XlsLoadData;
@@ -9,39 +10,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class LoadService {
     @Autowired
-    private LoadRepository loadRepository;
+    private  LoadRepository loadRepository;
     @Autowired
-    private XlsLoadData readXLS;
+    private  IssueRepository issueRepository;
     @Autowired
-    private Load load;
-    @Autowired
-    private Promote promote;
+    private  XlsLoadData readXLS;
+
 
     public Optional<Load> findById(Long id) {
         return loadRepository.findById(id);
     }
 
-    public void saveLoad(File excelFile, String source, String bankname,String issueKey) {
+public void updateLoad(Load load){loadRepository.saveAndFlush(load);}
+
+    public void saveLoad(File excelFile, String source, String bankname, String issueKey) {
         try {
             List<InputDto> loadInfo = readXLS.readXLSXFile2(excelFile);
-            for (int i = 0; i < loadInfo.size(); i++) {
-                load.setLoadName(loadInfo.get(i).getLoadName());
-                load.setLoadSize(loadInfo.get(i).getLoadSize());
-                load.setLoadDate(loadInfo.get(i).getLoadDate());
-                load.setCicsName(loadInfo.get(i).getCicsName());
-                load.setLoadSourcePath(createSourcePath(source, bankname));
-                load.setLoadDestinPath(createDestinPath(source,bankname));
-                load.setIssueKey(issueKey);
-                load.setLoadType("archbind");
-                loadRepository.save(load);
-                Thread.sleep(1000);
+            List<Load> loads = new ArrayList<>();
+            Issue issue=issueRepository.findByIssueKey(issueKey);
+            for (InputDto inputDto : loadInfo) {
+                Load load = new Load(inputDto.getLoadName(), inputDto.getLoadDate(), inputDto.getLoadSize()
+                        , createCicsName(bankname), createSourcePath(source, bankname), createDestinPath(source, bankname), "ARCHBIND");
+                load.getIssues().add(issue);
+                loads.add(load);
             }
+            Thread.sleep(1000);
+            loadRepository.saveAll(loads);
+            issue.getLoads().addAll(loads);
+            issueRepository.save(issue);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -74,7 +77,7 @@ public class LoadService {
 
     public String createDestinPath(String source, String bankname) {
         String result;
-        String des=null;
+        String des = null;
         if (source.equals("transit"))
             des = "azmoon";
         else if (source.equals("azmoon")) {
@@ -101,6 +104,49 @@ public class LoadService {
                 throw new IllegalStateException("Unexpected value: " + bankname);
         }
         return result;
+    }
+
+    public String createCicsName(String bankname) {
+        String result;
+
+        switch (bankname) {
+            case "bmi":
+                result = "CICSBMI";
+                break;
+            case "bsi":
+                result = "CICSBSI";
+                break;
+            case "bts":
+                result = "CICSBTS";
+                break;
+            case "bni":
+                result = "CICSBN";
+                break;
+            case "tat":
+                result = "CICSTAT";
+                break;
+            case "btj":
+                result = "CICSBTJ";
+                break;
+
+            default:
+                throw new IllegalStateException("Unexpected value: " + bankname);
+        }
+        return result;
+    }
+
+    public List<Load> findLoads(File excelfile, String formNumber) {
+        List<Load> loads = new ArrayList<>();
+        try {
+            List<Issue> issues = issueRepository.findByFormNumber(formNumber);
+            List<InputDto> loadInfo = readXLS.readXLSXFile2(excelfile);
+            for (int i = 0; i < loadInfo.size(); i++) {
+                loads = loadRepository.findByIssuesInAndLoadName(issues, loadInfo.get(i).getLoadName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return loads;
     }
 
 }

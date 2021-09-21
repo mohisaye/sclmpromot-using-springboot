@@ -1,12 +1,12 @@
 package com.baeldung.application;
 
-import com.baeldung.application.entities.Load;
-import com.baeldung.application.entities.Promote;
+import com.baeldung.application.entities.*;
 import com.baeldung.application.sclm.BaseMain;
 import com.baeldung.application.sclm.JiraUtils;
 import com.baeldung.application.sclm.XlsLoadData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 @Configuration
 public class AppConfig {
@@ -21,6 +21,7 @@ public class AppConfig {
     }
 
     @Bean
+    @Scope("prototype")
     public Promote promote(){
         return new Promote();
     }
@@ -34,4 +35,15 @@ public class AppConfig {
     public JiraUtils jiraUtils(){
         return new JiraUtils();
     }
+
+    @Bean
+    public User user() {return new User();}
+
+    @Bean
+    public Issue issue() {return new Issue();}
+
+    @Bean
+    public Release release() {return new Release();}
+
+
 }

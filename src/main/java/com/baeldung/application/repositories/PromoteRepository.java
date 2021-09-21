@@ -2,21 +2,17 @@ package com.baeldung.application.repositories;
 
 import com.baeldung.application.entities.Load;
 import com.baeldung.application.entities.Promote;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface PromoteRepository extends CrudRepository<Promote,Long> {
-    Promote findByIssueKeyAndLoad(String issueKey, Load load);
-    List<Promote> findAllByIssueKey(String issueKey);
+public interface PromoteRepository extends JpaRepository<Promote,Long> {
+    Promote findByLoad(Load load);
 
-    @Query("SELECT a.issueKey,a.jobNum,a.status,a.load \n" +
-            "FROM Promote AS a \n" +
-            "JOIN Load AS b\n" +
-            "ON a.load= b.promote\n" +
-            "where a.jobNum='' and a.issueKey= ?1")
-     List<Object> findAllByDscriptionQuery(String issueKey);
+    @Modifying
+    @Query("update Promote u set u.status = :status where u.id = :id")
+    void updateStatus(@Param(value = "id") long id, @Param(value = "status") String status);
 }
